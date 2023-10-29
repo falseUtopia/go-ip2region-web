@@ -8,6 +8,32 @@ import (
 	"strings"
 )
 
+type IPRegion struct {
+	IP       string `json:"ip"`
+	Country  string `json:"country"`
+	Region   string `json:"region"`
+	Province string `json:"province"`
+	City     string `json:"city"`
+	ISP      string `json:"isp"`
+}
+
+func regionStr2Region(ip string, regionStr string) IPRegion {
+
+	ipRegion := strings.Split(regionStr, "|")
+
+	region := IPRegion{
+		IP:       ip,
+		Country:  ipRegion[0],
+		Region:   ipRegion[1],
+		Province: ipRegion[2],
+		City:     ipRegion[3],
+		ISP:      ipRegion[4],
+	}
+
+	return region
+
+}
+
 func main() {
 
 	dbPath := "ip2region.xdb"
@@ -28,45 +54,32 @@ func main() {
 	println("使用方式：")
 	println("curl http://127.0.0.1:8899")
 	println("curl http://127.0.0.1:8899/223.5.5.5")
-	println("curl http://127.0.0.1:8899/223.5.5.5.json")
 
 	r := gin.Default()
 	r.GET("/", func(context *gin.Context) {
+
 		ip := context.ClientIP()
 		reg, err := searcher.SearchByStr(ip)
 		if err != nil {
 			context.String(500, "ip error")
+			return
+
 		}
-		context.String(200, reg)
+
+		context.JSON(http.StatusOK, regionStr2Region(ip, reg))
+
 	})
 	r.GET("/:ip", func(context *gin.Context) {
 
 		ip := context.Param("ip")
+		reg, err := searcher.SearchByStr(ip)
+		if err != nil {
+			context.String(500, "ip error")
+			return
 
-		if len(ip) > 5 && ip[len(ip)-5:] == ".json" {
-			ip = ip[:len(ip)-5] // 去掉末尾的 ".json"
-			reg, err := searcher.SearchByStr(ip)
-			if err != nil {
-				context.String(500, "ip error")
-			}
-
-			ipRegion := strings.Split(reg, "|")
-			context.JSON(http.StatusOK, gin.H{
-				"ip":       ip,
-				"country":  ipRegion[0],
-				"region":   ipRegion[1],
-				"province": ipRegion[2],
-				"city":     ipRegion[3],
-				"isp":      ipRegion[4],
-			})
-
-		} else {
-			reg, err := searcher.SearchByStr(ip)
-			if err != nil {
-				context.String(500, "ip error")
-			}
-			context.String(200, reg)
 		}
+
+		context.JSON(http.StatusOK, regionStr2Region(ip, reg))
 
 	})
 	rErr := r.Run(":8899")
