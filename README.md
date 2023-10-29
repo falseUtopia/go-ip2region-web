@@ -4,8 +4,17 @@
 
 数据来源和源码参考： https://github.com/lionsoul2014/ip2region
 
-## 使用
+## 运行
 
+```shell
+# 源码运行
+go run main.go
+
+# docker运行
+docker run -it --rm -p 127.0.0.1:8899:8899 --name go-ip2region-web fa1seut0pia/go-ip2region-web
+```
+
+## 使用
 
 ```shell
 
@@ -29,34 +38,14 @@ curl http://127.0.0.1:8899/223.5.5.5
 }
 ```
 
-## 构建
-
-```shell
-# Windows 
-go build -o dist/go-ip2region-web.exe
-
-# Linux
-# 如果此时是在windows中构建Linux平台二进制文件需执行，否则忽略下方的环境配置
-set GOARCH=amd64
-go env -w GOARCH=amd64
-set GOOS=linux
-go env -w GOOS=linux
-
-go build -o dist/go-ip2region-web-linux-amd64
-
-# 还原
-set GOARCH=amd64
-go env -w GOARCH=amd64
-set GOOS=windows
-go env -w GOOS=windows
-```
-
 ## Docker
 
 ```shell
-# 构建
-docker build -t go-ip2region-web .
 
 # 运行
-docker run -it -p 127.0.0.1:8899:8899 --name ipr go-ip2region-web
+docker run -it --rm -p 127.0.0.1:8899:8899 --name go-ip2region-web fa1seut0pia/go-ip2region-web
+
+# 有需要时可本地构建
+docker build -t go-ip2region-web .
+
 ```
